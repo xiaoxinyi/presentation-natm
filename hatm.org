@@ -44,7 +44,7 @@
 - 当训练集数据的增加以后，又需要经过新一轮的模型选择确定\(K\)。
 #+CAPTION: 参数模型
 #+NAME:   fig:pm
-[[/Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/chap01-pm.png]]
+[[./chap01/chap01-pm.png]]
 
 * 基于HDP的作者主题模型
 - 是一个非参数模型
