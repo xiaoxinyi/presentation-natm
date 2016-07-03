@@ -52,7 +52,7 @@
 - 当训练数据增加的时候可以进行迭代的训 练,而不需要像主题模型那样重新进行训练以及模型的选择,大大降低了计算资源的消耗
 #+CAPTION: 非参数模型
 #+NAME:   fig:npm
-[[/Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/chap01-npm.png]]
+[[./chap01/chap01-npm.png]]
 
 * 基于HDP的作者主题模型 (cont.)
 基于HDP的作者主题模型的生成过程如下：
@@ -63,7 +63,7 @@
 3. 根据该主题的词分布\(\phi\)，生成该词。
 #+CAPTION: 基于HDP的作者主题模型
 #+NAME:   fig:natm
-[[/Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/chap01-natm.png]]
+[[./chap01/chap01-natm.png]]
 
 * 评价标准
 混淆度是衡量概率模型训练参数的标准方法。定义如下：
@@ -87,19 +87,19 @@ p(\mathbf{w_d}|\mathbf{a_d}) =&\int d\theta \int d\phi p(\theta|\mathcal{D} ^{tr
 * 实验结果
 #+CAPTION: 模型比较(\(N_d^{train}=64\))
 #+NAME:   fig:pm
-[[/Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/perplexity64.png]]
+[[./chap01/perplexity64.png]]
 
 * 实验结果
 
 #+CAPTION: 模型比较(\(N_d^{train}=256\))
 #+NAME:   fig:pm
-[[/Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/perplexity256.png]]
+[[./chap01/perplexity256.png]]
 
 * 实验结果
 
 #+CAPTION: 模型比较(\(N_d^{train}=1024\))
 #+NAME:   fig:pm
-[[/Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/perplexity1024.png]]
+[[./chap01/perplexity1024.png]]
 
 * 实验结果
 我们可看到，随着主题数的变化（5，10，50，100，200，400，500），
