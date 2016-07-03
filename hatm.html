@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>基于HDP的作者主题模型</title>
+<!-- 2016-07-03 Sun 14:49 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Org-mode">
+
+<link  href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<style type="text/css">
+/* org mode styles on top of twbs */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    font-size: 18px;
+    margin-bottom: 105px;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 101px;
+    background-color: #f5f5f5;
+}
+
+footer > div {
+    padding: 10px;
+}
+
+footer p {
+    margin: 0 0 5px;
+    text-align: center;
+    font-size: 16px;
+}
+
+#table-of-contents {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+blockquote p {
+    font-size: 18px;
+}
+
+pre {
+    font-size: 16px;
+}
+
+.footpara {
+    display: inline-block;
+}
+
+figcaption {
+  font-size: 16px;
+  color: #666;
+  font-style: italic;
+  padding-bottom: 15px;
+}
+
+/* from twbs docs */
+
+.bs-docs-sidebar.affix {
+    position: static;
+}
+@media (min-width: 768px) {
+    .bs-docs-sidebar {
+        padding-left: 20px;
+    }
+}
+
+/* All levels of nav */
+.bs-docs-sidebar .nav > li > a {
+    display: block;
+    padding: 4px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #999;
+}
+.bs-docs-sidebar .nav > li > a:hover,
+.bs-docs-sidebar .nav > li > a:focus {
+    padding-left: 19px;
+    color: #A1283B;
+    text-decoration: none;
+    background-color: transparent;
+    border-left: 1px solid #A1283B;
+}
+.bs-docs-sidebar .nav > .active > a,
+.bs-docs-sidebar .nav > .active:hover > a,
+.bs-docs-sidebar .nav > .active:focus > a {
+    padding-left: 18px;
+    font-weight: bold;
+    color: #A1283B;
+    background-color: transparent;
+    border-left: 2px solid #A1283B;
+}
+
+/* Nav: second level (shown on .active) */
+.bs-docs-sidebar .nav .nav {
+    display: none; /* Hide by default, but at >768px, show it */
+    padding-bottom: 10px;
+}
+.bs-docs-sidebar .nav .nav > li > a {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 30px;
+    font-size: 12px;
+    font-weight: normal;
+}
+.bs-docs-sidebar .nav .nav > li > a:hover,
+.bs-docs-sidebar .nav .nav > li > a:focus {
+    padding-left: 29px;
+}
+.bs-docs-sidebar .nav .nav > .active > a,
+.bs-docs-sidebar .nav .nav > .active:hover > a,
+.bs-docs-sidebar .nav .nav > .active:focus > a {
+    padding-left: 28px;
+    font-weight: 500;
+}
+
+/* Nav: third level (shown on .active) */
+.bs-docs-sidebar .nav .nav .nav {
+    padding-bottom: 10px;
+}
+.bs-docs-sidebar .nav .nav .nav > li > a {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 40px;
+    font-size: 12px;
+    font-weight: normal;
+}
+.bs-docs-sidebar .nav .nav .nav > li > a:hover,
+.bs-docs-sidebar .nav .nav .nav > li > a:focus {
+    padding-left: 39px;
+}
+.bs-docs-sidebar .nav .nav .nav > .active > a,
+.bs-docs-sidebar .nav .nav .nav > .active:hover > a,
+.bs-docs-sidebar .nav .nav .nav > .active:focus > a {
+    padding-left: 38px;
+    font-weight: 500;
+}
+
+/* Show and affix the side nav when space allows it */
+@media (min-width: 992px) {
+    .bs-docs-sidebar .nav > .active > ul {
+        display: block;
+    }
+    /* Widen the fixed sidebar */
+    .bs-docs-sidebar.affix,
+    .bs-docs-sidebar.affix-bottom {
+        width: 213px;
+    }
+    .bs-docs-sidebar.affix {
+        position: fixed; /* Undo the static from mobile first approach */
+        top: 20px;
+    }
+    .bs-docs-sidebar.affix-bottom {
+        position: absolute; /* Undo the static from mobile first approach */
+    }
+    .bs-docs-sidebar.affix .bs-docs-sidenav,.bs-docs-sidebar.affix-bottom .bs-docs-sidenav {
+        margin-top: 0;
+        margin-bottom: 0
+    }
+}
+@media (min-width: 1200px) {
+    /* Widen the fixed sidebar again */
+    .bs-docs-sidebar.affix-bottom,
+    .bs-docs-sidebar.affix {
+        width: 263px;
+    }
+}
+</style>
+<style>body { margin-bottom: 0px; }</style><script type="text/javascript">
+$(function() {
+    'use strict';
+
+    $('.bs-docs-sidebar li').first().addClass('active');
+
+    $(document.body).scrollspy({target: '.bs-docs-sidebar'});
+
+    $('.bs-docs-sidebar').affix();
+});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  displayAlign: "center",
+  displayIndent: "2em",
+  messageStyle: "none",
+  "HTML-CSS": {
+    scale: 100,
+    styles: {
+      ".MathJax_Display": {
+        "font-size": "100%"
+      }
+    }
+  },
+  "SVG": {
+    scale: 100,
+    styles: {
+      ".MathJax_SVG_Display": {
+        "font-size": "100%",
+        "margin-left": "-2.281em"
+      }
+    }
+  }
+});
+</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_SVG"></script>
+</head>
+<body>
+<div id="content" class="container">
+<div class="row"><div class="col-md-9"><h1 class="title">基于HDP的作者主题模型</h1>
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">研究背景</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>提取文档内容的特征早已成为信息检索、基于统计的自然语言理解、机器学习等领域的标准问题。有效地表示文档内容是为文档的聚类、分类、检索的重要先决条件。
+</li>
+<li>随着互联网的不断发展,数据的类型也是层出不穷。文档不再只是以单纯的文本形 式出现,文档可能带有其他的一些属性或者标签。比如,文档可能含有作者,时间,地 理位置等等其他的属性。那么我们怎样来挖掘这些属性(或者实体)的主题(或者兴趣) 呢?
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">研究目标</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>通过对作者兴趣的建模，根据一大批文档的内容，我们可以回答一系列重要问题的查询。
+<ul class="org-ul">
+<li>我们可以知道作者是从事哪个领域的
+</li>
+<li>给定一篇文章，我们可以判断哪些作者所从事的领域（主题）与该篇文章类似
+</li>
+<li>推断一篇文章的作者
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">主题模型（LDA）简介</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>LDA中，一篇文档的生成可以分三步：
+<ol class="org-ol">
+<li>每一篇文档从 Dirichlet 分布采样一个基于主题的分布;
+</li>
+<li>对于每一篇文章中的每一个单词,采样一个主题的索引;
+</li>
+<li>从这个主题中关于词的分布采样这个单词。
+</li>
+</ol>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">作者模型简介</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>作者模型中，每一篇文章中的每一个单词的生成过程如下：
+<ol class="org-ol">
+<li>为每一个词根据均匀分布从该文档的所有作者\(a_d\)中选择一个作者\(x\)；
+</li>
+<li>根据这个作者所在的主题的词分布\(\phi\)生成这个词。
+</li>
+</ol>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">作者主题模型</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>在作者主题模型中，每篇文档中的每一个单词的生成过程如下：
+<ol class="org-ol">
+<li>为这个单词从该篇文档的所有作者\(a_d\)随机选择一名作者\(x\)；
+</li>
+<li>每一个作者都有一个对于所有主题的混合分布\(\theta\)，\(\theta \sim Dirichlet(\alpha)\)。根据\(\theta\)，采样一个主题的索引号\(z\)；
+</li>
+<li>没个主题对应一个在词上的多项式分布\(\phi\)，且独立同分布，\(\phi \sim Dirichlet(\beta)\)。这个词就根据选中主题的对应分布\(\phi\)采样得到。
+</li>
+</ol>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">基于HDP的作者主题模型</h2>
+<div class="outline-text-2" id="text-">
+<p>
+上面介绍的模型都属于参数模型（parameter model）。
+</p>
+<dl class="org-dl">
+<dt> 参数模型 </dt><dd>是指模型是在有限空间的参数估计，
+</dd>
+<dt> 例： </dt><dd></dd>
+</dl>
+<pre class="example">
+作者主题模型中所有主题的个数\(K\)是需要人为设定的。
+那么问题是\(K\)设置成多少值呢？
+我们就需要进行模型选择或者模型比较，
+通过设置不同\(K\)值，进行交叉验证。
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">参数模型的缺点</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>交叉验证，需要消耗更多的计算资源；
+</li>
+<li>当训练集数据的增加以后，又需要经过新一轮的模型选择确定\(K\)。
+</li>
+</ul>
+
+<figure id="fig:pm">
+<p><img src="file:///Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/chap01-pm.png" class="img-responsive" alt="chap01-pm.png">
+</p>
+<figcaption><span class="figure-number">Figure 1:</span> 参数模型</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">基于HDP的作者主题模型</h2>
+<div class="outline-text-2" id="text-">
+<ul class="org-ul">
+<li>是一个非参数模型
+</li>
+<li>不需要进行模型选择，自动产生主题数目\(k\)
+</li>
+<li>当训练数据增加的时候可以进行迭代的训 练,而不需要像主题模型那样重新进行训练以及模型的选择,大大降低了计算资源的消耗
+</li>
+</ul>
+
+<figure id="fig:npm">
+<p><img src="file:///Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/chap01-npm.png" class="img-responsive" alt="chap01-npm.png">
+</p>
+<figcaption><span class="figure-number">Figure 2:</span> 非参数模型</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">基于HDP的作者主题模型 (cont.)</h2>
+<div class="outline-text-2" id="text-">
+<p>
+基于HDP的作者主题模型的生成过程如下：
+</p>
+
+<p>
+对于每篇文章的每个单词，
+</p>
+<ol class="org-ol">
+<li>根据均匀分布，在本文档的所有作者中采样一个作者；
+</li>
+<li>根据作者级的Dirichlet process \(G_x\)，采样对应主题的词分布\(\phi\)。而\(G_x\)采样自语料级的Dirichlet process \(G_0\)；
+</li>
+<li>根据该主题的词分布\(\phi\)，生成该词。
+</li>
+</ol>
+
+<figure id="fig:natm">
+<p><img src="file:///Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/chap01-natm.png" class="img-responsive" alt="chap01-natm.png">
+</p>
+<figcaption><span class="figure-number">Figure 3:</span> 基于HDP的作者主题模型</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">评价标准</h2>
+<div class="outline-text-2" id="text-">
+<p>
+混淆度是衡量概率模型训练参数的标准方法。定义如下：
+</p>
+<p>
+混淆度越低，模型的泛化越好。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">实验结果</h2>
+<div class="outline-text-2" id="text-">
+
+<figure id="fig:pm">
+<p><img src="file:///Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/perplexity64.png" class="img-responsive" alt="perplexity64.png">
+</p>
+<figcaption><span class="figure-number">Figure 4:</span> 模型比较(\(N_d^{train}=64\))</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">实验结果</h2>
+<div class="outline-text-2" id="text-">
+
+<figure id="fig:pm">
+<p><img src="file:///Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/perplexity256.png" class="img-responsive" alt="perplexity256.png">
+</p>
+<figcaption><span class="figure-number">Figure 5:</span> 模型比较(\(N_d^{train}=256\))</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">实验结果</h2>
+<div class="outline-text-2" id="text-">
+
+<figure id="fig:pm">
+<p><img src="file:///Users/zhangli/Desktop/论文/UCASthesis/figures/chap01/perplexity1024.png" class="img-responsive" alt="perplexity1024.png">
+</p>
+<figcaption><span class="figure-number">Figure 6:</span> 模型比较(\(N_d^{train}=1024\))</figcaption>
+</figure>
+</div>
+</div>
+
+<div id="outline-container-sec-" class="outline-2">
+<h2 id="sec-">实验结果</h2>
+<div class="outline-text-2" id="text-">
+<p>
+我们可看到，随着主题数的变化（5，10，50，100，200，400，500），
+</p>
+<ul class="org-ul">
+<li>当\(N_d^{train}=64\)时，ATM的在主题数50到100的时候达到最小，而根据实验，当\(N_d^{train}=64\)时，HDP-ATM最后形成的主题数76个，从曲线上符合是ATM的最优值的范围。
+</li>
+<li>同样当\(N_d^{train}=256\)时，ATM的在主题数100到200的时候达到最小，而根据实验，当\(N_d^{train}=256\)时，HDP-ATM最后形成的主题数145个，从曲线上符合是ATM的最优值的范围。
+</li>
+<li>同样当\(N_d^{train}=1024\)时，ATM的在主题数400到500的时候达到最小，而根据实验，当\(N_d^{train}=1024\)时，HDP-ATM最后形成的主题数4个，从曲线上符合是ATM的最优值的范围。
+</li>
+</ul>
+</div>
+</div>
+</div><div class="col-md-3"><nav id="table-of-contents">
+<div id="text-table-of-contents" class="bs-docs-sidebar">
+<ul class="nav">
+<li><a href="#sec-">研究背景</a></li>
+<li><a href="#sec-">研究目标</a></li>
+<li><a href="#sec-">主题模型（LDA）简介</a></li>
+<li><a href="#sec-">作者模型简介</a></li>
+<li><a href="#sec-">作者主题模型</a></li>
+<li><a href="#sec-">基于HDP的作者主题模型</a></li>
+<li><a href="#sec-">参数模型的缺点</a></li>
+<li><a href="#sec-">基于HDP的作者主题模型</a></li>
+<li><a href="#sec-">基于HDP的作者主题模型 (cont.)</a></li>
+<li><a href="#sec-">评价标准</a></li>
+<li><a href="#sec-">实验结果</a></li>
+<li><a href="#sec-">实验结果</a></li>
+<li><a href="#sec-">实验结果</a></li>
+<li><a href="#sec-">实验结果</a></li>
+</ul>
+</div>
+</nav>
+</div></div></div>
+</body>
+</html>

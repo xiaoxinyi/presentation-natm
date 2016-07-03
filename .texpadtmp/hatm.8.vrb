@@ -1,0 +1,12 @@
+\frametitle{基于HDP的作者主题模型}
+上面介绍的模型都属于参数模型（parameter model）。
+\begin{description}
+\item[{参数模型}] 是指模型是在有限空间的参数估计，
+\item[{例：}]
+\end{description}
+\begin{verbatim}
+作者主题模型中所有主题的个数\(K\)是需要人为设定的。
+那么问题是\(K\)设置成多少值呢？
+我们就需要进行模型选择或者模型比较，
+通过设置不同\(K\)值，进行交叉验证。
+\end{verbatim}
